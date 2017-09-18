@@ -3,12 +3,12 @@ A pretty basic gem for consulting Nicaraguan money exchange reates using the BCN
 
 ## Usage
 ```ruby
-# Return the exchange rate for September 15th, 2017
+# Returns the exchange rate for September 15th, 2017
 rate = BcnNi.exchange_day(2017,9,15)
 # 
 # => 30.3537
 
-# Return the exchange rate table for September, 2017
+# Returns the exchange rate table for September, 2017
 table = BcnNi.exchange_month(2017,9)
 #
 # => [
