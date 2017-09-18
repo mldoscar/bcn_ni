@@ -50,7 +50,14 @@ table = BcnNi.exchange_month(2017,9)
 Add this line to your application's Gemfile:
 
 ```ruby
+# From git repository
 gem 'bcn_ni', git: 'https://github.com/mldoscar/bcn_ni', branch: 'master'
+
+# From ruby gems
+gem 'bcn_ni'
+
+# Using gem install
+gem install bcn_ni
 ```
 
 And then execute:
