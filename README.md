@@ -58,11 +58,6 @@ And then execute:
 $ bundle
 ```
 
-Or install it yourself as:
-```bash
-$ gem install bcn_ni
-```
-
 ## Contributing
 Contribution directions go here.
 
