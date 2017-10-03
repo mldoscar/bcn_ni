@@ -6,21 +6,7 @@ require 'json'
 module BcnNi
 
   def self.exchange_day(year, month, day)
-    # (see 'https://servicios.bcn.gob.ni/Tc_Servicio/ServicioTC.asmx')
-    # for more info about how to build a SOAP RAW request)
-
-    # Parse the URI
-    uri = URI.parse('https://servicios.bcn.gob.ni/Tc_Servicio/ServicioTC.asmx?WSDL')
-    
-    # Create protocol to the URI
-    https = Net::HTTP.new(uri.host, uri.port)
-    https.use_ssl = true
-
-    # Create a new POST request as XML content type
-    req = Net::HTTP::Post.new(uri.path, initheader = {'Content-Type' => 'text/xml'})
-
-    # Set the request body as a RAW SOAP XML request
-    req.body = <<EOF
+    body = <<EOF
 <?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
   <soap:Body>
@@ -32,14 +18,8 @@ module BcnNi
   </soap:Body>
 </soap:Envelope>
 EOF
-    # Process the request
-    res = https.request(req)
 
-    # Get the XML response
-    xml_response = res.body
-
-    # Parse to a JSON hash
-    json_response = Hash.from_xml(xml_response)
+    json_response = self.do_request(body)
 
     # Get the result value
     value_result = json_response['Envelope']['Body']['RecuperaTC_DiaResponse']['RecuperaTC_DiaResult']
@@ -50,21 +30,7 @@ EOF
   end
 
   def self.exchange_month(year, month)
-    # (see 'https://servicios.bcn.gob.ni/Tc_Servicio/ServicioTC.asmx')
-    # for more info about how to build a SOAP RAW request)
-
-    # Parse the URI
-    uri = URI.parse('https://servicios.bcn.gob.ni/Tc_Servicio/ServicioTC.asmx?WSDL')
-    
-    # Create protocol to the URI
-    https = Net::HTTP.new(uri.host, uri.port)
-    https.use_ssl = true
-
-    # Create a new POST request as XML content type
-    req = Net::HTTP::Post.new(uri.path, initheader = {'Content-Type' => 'text/xml'})
-
-    # Set the request body as a RAW SOAP XML request
-    req.body = <<EOF
+    body = <<EOF
 <?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
   <soap:Body>
@@ -75,14 +41,8 @@ EOF
   </soap:Body>
 </soap:Envelope>
 EOF
-    # Process the request
-    res = https.request(req)
 
-    # Get the XML response
-    xml_response = res.body
-
-    # Parse to a JSON hash
-    json_response = Hash.from_xml(xml_response)
+    json_response = self.do_request(body)
 
     # Get the result array
     exchange_table = json_response['Envelope']['Body']['RecuperaTC_MesResponse']['RecuperaTC_MesResult']['Detalle_TC']['Tc']
@@ -99,5 +59,33 @@ EOF
     end
 
   end
-  
+
+  def self.do_request(body)
+    # see 'https://servicios.bcn.gob.ni/Tc_Servicio/ServicioTC.asmx'
+    # for more info about how to build a SOAP RAW request
+
+    # Parse the URI
+    uri = URI.parse('https://servicios.bcn.gob.ni/Tc_Servicio/ServicioTC.asmx?WSDL')
+
+    # Create protocol to the URI
+    https = Net::HTTP.new(uri.host, uri.port)
+
+    https.use_ssl = true
+
+    # Create a new POST request as XML content type
+    req = Net::HTTP::Post.new(uri.path, initheader = {'Content-Type' => 'text/xml'})
+
+    # Set the request body as a RAW SOAP XML request
+    req.body = body
+
+    # Process the request
+    res = https.request(req)
+
+    # Get the XML response
+    xml_response = res.body
+
+    # Parse to a JSON hash
+    return Hash.from_xml(xml_response)
+  end
+
 end
