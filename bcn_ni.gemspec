@@ -10,8 +10,8 @@ Gem::Specification.new do |s|
   s.authors     = ["Oscar Rodriguez"]
   s.email       = ["mld.oscar@yahoo.com"]
   s.homepage    = "https://github.com/mldoscar/bcn_ni"
-  s.summary     = "A pretty basic gem for consulting Nicaraguan money exchange reates using the BCN SOAP Service"
-  s.description = "A pretty basic gem for consulting Nicaraguan money exchange reates using the BCN SOAP Service"
+  s.summary     = "This gem provides NIO (Córdoba oro Nicaragüense) versus USD (United States dollar) money exchange rates consuming the official Central Bank of Nicaragüa (BCN) SOAP Service"
+  s.description = "This gem provides NIO (Córdoba oro Nicaragüense) versus USD (United States dollar) money exchange rates consuming the official Central Bank of Nicaragüa (BCN) SOAP Service"
   s.license     = "MIT"
 
   s.files = Dir["{app,config,db,lib}/**/*", "MIT-LICENSE", "Rakefile", "README.md"]
