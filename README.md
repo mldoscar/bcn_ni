@@ -54,7 +54,7 @@ Add this line to your application's Gemfile:
 gem 'bcn_ni', git: 'https://github.com/mldoscar/bcn_ni', branch: 'master'
 
 # From ruby gems
-gem 'bcn_ni'
+gem 'bcn_ni', '~> 0.1.1'
 
 # Using gem install
 gem install bcn_ni
