@@ -8,10 +8,12 @@ class BcnNi::Test < ActiveSupport::TestCase
   test 'Returns the correct exchange rate of a determinated day' do
     # Fetch the exchange rate for September 15th, 2017
     exchange_rate = BcnNi.exchange_day(2017,9,15)
+    
+    expected_rate = 30.3537
 
     # Do assertions
     assert_equal(
-      30.3537, 
+      expected_rate, 
       exchange_rate, 
       'Returned exchange rate does not correspond to expected value'
     )
