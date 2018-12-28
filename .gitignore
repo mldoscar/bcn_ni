@@ -44,4 +44,4 @@ bower.json
 # Ignore Byebug command history file.
 .byebug_history
 
-/test/dummy/log/test.log
+/test/dummy/log/*.log

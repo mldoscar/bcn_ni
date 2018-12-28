@@ -29,13 +29,13 @@ module BcnNi
     # Get the result array
     exchange_table = json_response['Envelope']['Body']['RecuperaTC_MesResponse']['RecuperaTC_MesResult']['Detalle_TC']['Tc']
 
-    unless exchange_table.nil?
+    if exchange_table.present?
       # Parse the table to a custom and better JSON
       # The format example will be: {date: as Date, value: as Float}
-      parsed_table = exchange_table.map{|x| {date: Date.parse(x['Fecha']), value: x['Valor'].to_f} }
+      parsed_table = exchange_table.map{ |x| { date: Date.parse(x['Fecha']), value: x['Valor'].to_f } }
 
       # Sort the parsed table and finally return it
-      return parsed_table.sort_by {|x| x[:date]}
+      return parsed_table.sort_by { |x| x[:date] }
     else
       return []
     end
@@ -52,11 +52,11 @@ module BcnNi
 
       # Create protocol to the URI
       https = Net::HTTP.new(uri.host, uri.port)
-
       https.use_ssl = true
 
       # Create a new POST request as XML content type
-      req = Net::HTTP::Post.new(uri.path, initheader = {'Content-Type' => 'text/xml'})
+      req = Net::HTTP::Post.new(uri.path)
+      req['Content-Type'] = 'text/xml'
 
       # Set the request body as a RAW SOAP XML request
       req.body = body
