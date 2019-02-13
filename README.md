@@ -1,15 +1,15 @@
 # BcnNi
 This gem provides NIO (Córdoba oro Nicaragüense) versus USD (United States dollar) money exchange rates consuming the official Central Bank of Nicaragüa (BCN) SOAP Service
 
-## Usage
+## Basic usage
 ```ruby
 # Returns the exchange rate for September 15th, 2017
-rate = BcnNi.exchange_day(2017,9,15)
+day_rate = BcnNi.exchange_day(2017, 9, 15)
 #
 # => 30.3537
 
 # Returns the exchange rate table for September, 2017
-table = BcnNi.exchange_month(2017,9)
+month_rate = BcnNi.exchange_month(2017, 9)
 #
 # => [
 #     {:date=>Fri, 01 Sep 2017, :value=>30.2969},
@@ -46,6 +46,19 @@ table = BcnNi.exchange_month(2017,9)
 
 ```
 
+## Changing the request mode
+For changing the request mode simply add `request_mode` argument at the end of the method args. **The default request mode is scrapping** (which incredibly resulted to be faster than SOAP and with 24/7 availability). You can change this like the example given below:
+
+```ruby
+# Scrapping mode
+day_rate    = BcnNi.exchange_day(2017, 9, 15, request_mode: :scrapping)
+month_rate  = BcnNi.exchange_month(2017, 9, request_mode: :scrapping)
+# SOAP request mode
+day_rate    = BcnNi.exchange_day(2017, 9, 15, request_mode: :soap)
+month_rate  = BcnNi.exchange_month(2017, 9, request_mode: :soap)
+```
+
+
 ## Installation
 Add this line to your application's Gemfile:
 
@@ -54,7 +67,7 @@ Add this line to your application's Gemfile:
 gem 'bcn_ni', git: 'https://github.com/mldoscar/bcn_ni', branch: 'master'
 
 # From ruby gems
-gem 'bcn_ni', '~> 0.1.2'
+gem 'bcn_ni', '>= 0.1.3'
 
 # Using gem install
 gem install bcn_ni
@@ -66,7 +79,7 @@ $ bundle
 ```
 
 ## Contributing
-You guys are free to send your pull requests for contributing. Thanks in advance!
+You guys are free to send your pull requests for contributing. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the Contributor Covenant code of conduct.
 
 ## License
 The gem is available as open source under the terms of the [MIT License](http://opensource.org/licenses/MIT).

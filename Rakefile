@@ -31,3 +31,8 @@ end
 
 
 task default: :test
+
+desc "Open an irb session preloaded with this library"
+task :console do
+  sh "irb -r rubygems -I lib -r bcn_ni.rb"
+end
