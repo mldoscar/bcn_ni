@@ -8,6 +8,7 @@ RSpec.describe 'BcnNi', type: :feature do
 
     expected_rate = 30.3537
 
+    expect(BcnNi.exceptions).to be_empty
     expect(exchange_rate).to eq expected_rate
   end
 
@@ -48,6 +49,7 @@ RSpec.describe 'BcnNi', type: :feature do
       {:date=> Date.parse('2017-09-30'), :value=>30.4146}
     ]
 
+    expect(BcnNi.exceptions).to be_empty
     expect(exchange_table).to eq expected_table
   end
 end

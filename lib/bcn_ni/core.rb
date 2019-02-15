@@ -1,15 +1,27 @@
 module BcnNi
   require File.expand_path(File.dirname(__FILE__)) + '/helpers/request'
 
-  def self.exchange_month(year, month, args = {})
-    request = BcnNi::Request.new(args)
+  @@exceptions  = []
 
-    return request.exchange_month(year, month)
+  def self.exchange_month(year, month, args = {})
+    engine        = BcnNi::Request.new(args)
+
+    result        = engine.exchange_month(year, month)
+    @@exceptions  = engine.exceptions
+
+    return result
   end
 
   def self.exchange_day(year, month, day, args = {})
-    request = BcnNi::Request.new(args)
+    engine        = BcnNi::Request.new(args)
 
-    return request.exchange_day(year, month, day)
+    result        = engine.exchange_day(year, month, day)
+    @@exceptions  = engine.exceptions
+
+    return result
+  end
+
+  def self.exceptions
+    return @@exceptions
   end
 end
