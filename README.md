@@ -1,5 +1,5 @@
 # BcnNi
-This gem provides NIO (Córdoba oro Nicaragüense) versus USD (United States dollar) money exchange rates consuming the official Central Bank of Nicaragüa (BCN) SOAP Service
+This gem provides NIO (Córdoba Oro Nicaragüense) against USD (United States Dollar) money exchange rates consuming the official Central Bank of Nicaragüa (BCN) SOAP Service or HTML page
 
 ## Basic usage
 ```ruby
@@ -67,7 +67,7 @@ Add this line to your application's Gemfile:
 gem 'bcn_ni', git: 'https://github.com/mldoscar/bcn_ni', branch: 'master'
 
 # From ruby gems
-gem 'bcn_ni', '>= 0.1.3'
+gem 'bcn_ni', '>= 0.1.4'
 
 # Using gem install
 gem install bcn_ni

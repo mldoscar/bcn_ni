@@ -8,22 +8,9 @@ require 'json'
 
 module BcnNi
   class Request
-    @request_url  = ""
+    @request_url  = nil
     @request_mode = nil
-
-    def initialize(args = {})
-      @request_mode = (args[:request_mode] || :scrapping).to_sym
-
-      case @request_mode
-      when :scrapping
-        @request_url = "https://www.bcn.gob.ni/estadisticas/mercados_cambiarios/tipo_cambio/cordoba_dolar/mes.php"
-      when :soap
-        # See 'https://servicios.bcn.gob.ni/Tc_Servicio/ServicioTC.asmx' for more info about how to build a RAW SOAP request
-        @request_url = "https://servicios.bcn.gob.ni/Tc_Servicio/ServicioTC.asmx?WSDL"
-      else
-        raise Exception.new('Request mode not implemented')
-      end
-    end
+    @exceptions   = nil
 
     def request_url
       return @request_url
@@ -33,25 +20,58 @@ module BcnNi
       return @request_mode
     end
 
-    def exchange_month(year, month)
-      case request_mode
+    def exceptions
+      return @exceptions
+    end
+
+    def initialize(args = {})
+      @request_mode = (args[:request_mode] || :scrapping).to_sym
+      @exceptions   = []
+
+      case @request_mode
       when :scrapping
-        return scra__exchange_month(year, month)
+        @request_url = "https://www.bcn.gob.ni/estadisticas/mercados_cambiarios/tipo_cambio/cordoba_dolar/mes.php"
       when :soap
-        return soap__exchange_month(year, month)
+        # See 'https://servicios.bcn.gob.ni/Tc_Servicio/ServicioTC.asmx' for more info about how to build a RAW SOAP request
+        @request_url = "https://servicios.bcn.gob.ni/Tc_Servicio/ServicioTC.asmx?WSDL"
       else
-        raise Exception.new('Request mode not implemented')
+        raise NotImplementedError, 'Request mode not implemented'
+      end
+    end
+
+    def exchange_month(year, month)
+      begin
+        # Evaluate scrapping mode to call the correct method for processing the request
+        case request_mode
+        when :scrapping
+          return scra__exchange_month(year, month)
+        when :soap
+          return soap__exchange_month(year, month)
+        end
+      rescue Exception => e
+        # Save the exception into the exception list for future error messages or debugging
+        @exceptions.push e
+
+        # Return an empty value according to the called method
+        return []
       end
     end
 
     def exchange_day(year, month, day)
-      case request_mode
-      when :scrapping
-        return scra__exchange_day(year, month, day)
-      when :soap
-        return soap__exchange_day(year, month, day)
-      else
-        raise Exception.new('Request mode not implemented')
+      begin
+        # Evaluate scrapping mode to call the correct method for processing the request
+        case request_mode
+        when :scrapping
+          return scra__exchange_day(year, month, day)
+        when :soap
+          return soap__exchange_day(year, month, day)
+        end
+      rescue Exception => e
+        # Save the exception into the exception list for future error messages or debugging
+        @exceptions.push e
+
+        # Return an empty value according to the called method
+        return nil
       end
     end
 
@@ -69,9 +89,27 @@ module BcnNi
 
         # Generate the full url
         full_url = request_url + '?' + args.to_param
+        
+        # This loop prevents a random EOFError (main cause is not known yet)
+        retries   = 0
+        response  = nil
+        while true
+          # Raise an error if too many retries
+          raise StopIteration if retries >= 5
 
-        # Fetch and parse HTML document
-        doc = Nokogiri::HTML(open(full_url, { ssl_verify_mode: OpenSSL::SSL::VERIFY_NONE }))
+          begin
+            response = open(full_url, { ssl_verify_mode: OpenSSL::SSL::VERIFY_NONE })
+            # Exit loop if response has been assigned
+            break
+          rescue EOFError => e
+            # Sum retry and sleep the thread for a while
+            retries += 1
+            sleep(2.seconds)
+          end
+        end
+
+        # Parse the HTML document
+        doc = Nokogiri::HTML(response)
 
         result = []
         # Iterate table
