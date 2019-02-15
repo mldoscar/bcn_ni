@@ -16,8 +16,8 @@ Gem::Specification.new do |s|
 
   s.files = Dir["{app,config,db,lib}/**/*", "MIT-LICENSE", "Rakefile", "README.md", "CODE_OF_CONDUCT.md"]
 
-  s.add_runtime_dependency "activesupport", "~> 5.2"
-  s.add_runtime_dependency "nokogiri",      "~> 1.6"
+  s.add_dependency "activesupport", "~> 5.2"
+  s.add_dependency "nokogiri",      "~> 1.6"
 
   s.add_development_dependency "rake",  "~> 12.3"
   s.add_development_dependency "rspec", "~> 3.8"
