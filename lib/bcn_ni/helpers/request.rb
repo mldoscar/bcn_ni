@@ -30,7 +30,7 @@ module BcnNi
 
       case @request_mode
       when :scrapping
-        @request_url = "https://www.bcn.gob.ni/estadisticas/mercados_cambiarios/tipo_cambio/cordoba_dolar/mes.php"
+        @request_url = "https://www.bcn.gob.ni/IRR/tipo_cambio_mensual/mes.php"
       when :soap
         # See 'https://servicios.bcn.gob.ni/Tc_Servicio/ServicioTC.asmx' for more info about how to build a RAW SOAP request
         @request_url = "https://servicios.bcn.gob.ni/Tc_Servicio/ServicioTC.asmx?WSDL"
@@ -79,12 +79,11 @@ module BcnNi
       def scra__exchange_month(year, month)
         # Parse the date
         start_date = Date.new(year, month, 1)
-        end_date   = start_date.end_of_month
 
         # Create the arg hash
         args = {
-          Fecha_inicial:  start_date,
-          Fecha_final:    end_date
+          mes:  start_date.strftime('%d'),
+          anio: start_date.strftime('%Y')
         }
 
         # Generate the full url
