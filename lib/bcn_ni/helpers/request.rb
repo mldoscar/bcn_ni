@@ -82,7 +82,7 @@ module BcnNi
 
         # Create the arg hash
         args = {
-          mes:  start_date.strftime('%d'),
+          mes:  start_date.strftime('%m'),
           anio: start_date.strftime('%Y')
         }
 
