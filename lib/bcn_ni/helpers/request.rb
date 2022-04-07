@@ -3,8 +3,13 @@ require 'net/http'
 require 'net/https'
 require 'nokogiri'
 require 'open-uri'
-require 'active_support/core_ext/hash'
 require 'json'
+require 'active_support/core_ext/hash'
+begin
+  require 'active_support/time'
+rescue LoadError
+end
+
 
 module BcnNi
   class Request
@@ -193,35 +198,35 @@ module BcnNi
       end
 
       def soap__envelope(letter)
-        envelope = <<EOF
+        envelope = <<-XML
           <?xml version="1.0" encoding="utf-8"?>
           <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
             <soap:Body>
               #{letter}
             </soap:Body>
           </soap:Envelope>
-EOF
+XML
         return envelope
       end
 
       def soap__letter_exchange_day(year, month, day)
-        letter = <<EOF
+        letter = <<-XML
           <RecuperaTC_Dia xmlns="http://servicios.bcn.gob.ni/">
             <Ano>#{year}</Ano>
             <Mes>#{month}</Mes>
             <Dia>#{day}</Dia>
           </RecuperaTC_Dia>
-EOF
+XML
         return letter
       end
 
       def soap__letter_exchange_month(year, month)
-        letter = <<EOF
+        letter = <<-XML
           <RecuperaTC_Mes xmlns="http://servicios.bcn.gob.ni/">
             <Ano>#{year}</Ano>
             <Mes>#{month}</Mes>
           </RecuperaTC_Mes>
-EOF
+XML
         return letter
       end
 
