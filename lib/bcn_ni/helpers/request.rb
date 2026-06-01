@@ -4,6 +4,7 @@ require 'net/https'
 require 'nokogiri'
 require 'open-uri'
 require 'json'
+require 'open3'
 require 'active_support/core_ext/hash'
 begin
   require 'active_support/time'
@@ -93,7 +94,7 @@ module BcnNi
 
         # Generate the full url
         full_url = request_url + '?' + args.to_param
-        
+
         # This loop prevents a random EOFError (main cause is not known yet)
         retries   = 0
         response  = nil
@@ -102,10 +103,10 @@ module BcnNi
           raise StopIteration if retries >= 5
 
           begin
-            response = open(full_url, { ssl_verify_mode: OpenSSL::SSL::VERIFY_NONE })
+            response = URI.open(full_url, ssl_verify_mode: OpenSSL::SSL::VERIFY_NONE)
             # Exit loop if response has been assigned
             break
-          rescue EOFError => e
+          rescue EOFError
             # Sum retry and sleep the thread for a while
             retries += 1
             sleep(2.seconds)
@@ -145,67 +146,90 @@ module BcnNi
 
       def soap__exchange_day(year, month, day)
         # Build body through a XML envelope
-        body          = soap__envelope(soap__letter_exchange_day(year, month, day))
-        json_response = soap__request(body)
+        body         = soap__envelope(soap__letter_exchange_day(year, month, day))
+        xml_response = soap__request(body)
+        doc          = Nokogiri::XML(xml_response)
 
-        # Get the result value
-        value_result = json_response['Envelope']['Body']['RecuperaTC_DiaResponse']['RecuperaTC_DiaResult']
         # Parse the result value and finally return it
+        value_result = doc.at_xpath("//*[local-name()='RecuperaTC_DiaResult']")&.text
         return value_result.to_f
       end
 
       def soap__exchange_month(year, month)
         # Build body through a XML envelope
-        body          = soap__envelope(soap__letter_exchange_month(year, month))
-        json_response = soap__request(body)
+        body         = soap__envelope(soap__letter_exchange_month(year, month))
+        xml_response = soap__request(body)
+        doc          = Nokogiri::XML(xml_response)
 
-        # Get the result array
-        exchange_table = json_response['Envelope']['Body']['RecuperaTC_MesResponse']['RecuperaTC_MesResult']['Detalle_TC']['Tc']
-
-        if exchange_table.present?
-          # Parse the table to a custom and better JSON
-          # The format example will be: {date: as Date, value: as Float}
-          parsed_table = exchange_table.map{ |x| { date: Date.parse(x['Fecha']), value: x['Valor'].to_f } }
-          # Sort the parsed table and finally return it
-          return parsed_table.sort_by { |x| x[:date] }
-        else
-          return []
+        # Parse the table to a custom and better JSON
+        # The format example will be: {date: as Date, value: as Float}
+        exchange_rows = doc.xpath("//*[local-name()='Detalle_TC']/*[local-name()='Tc']")
+        parsed_table = exchange_rows.map do |row|
+          {
+            date: Date.parse(row.at_xpath("*[local-name()='Fecha']")&.text.to_s),
+            value: row.at_xpath("*[local-name()='Valor']")&.text.to_f
+          }
         end
+
+        # Sort the parsed table and finally return it
+        return parsed_table.sort_by { |x| x[:date] }
       end
 
       def soap__request(body)
-        # Parse the URI
+        xml_response = begin
+          soap__request_with_net_http(body)
+        rescue OpenSSL::SSL::SSLError => e
+          # BCN SOAP endpoint currently negotiates TLS in a way OpenSSL 3 may reject.
+          # Fallback to curl keeps compatibility in modern Ruby runtimes.
+          raise unless e.message.to_s.downcase.include?('unsupported protocol')
+
+          soap__request_with_curl(body)
+        end
+
+        return xml_response
+      end
+
+      def soap__request_with_net_http(body)
         uri           = URI.parse(request_url)
-        # Create protocol to the URI
         request_engine              = Net::HTTP.new(uri.host, uri.port)
         request_engine.use_ssl      = true
         request_engine.verify_mode  = OpenSSL::SSL::VERIFY_NONE
         request_engine.open_timeout = 15.seconds
+        request_engine.read_timeout = 15.seconds
 
-        # Create a new POST request as XML content type
         req                 = Net::HTTP::Post.new(uri.path)
         req['Content-Type'] = 'text/xml'
+        req.body            = body
 
-        # Set the request body as a RAW SOAP XML request
-        req.body = body
-        # Process the request
         res = request_engine.request(req)
-        # Get the XML response
-        xml_response = res.body
+        return res.body
+      end
 
-        # Parse to a JSON hash
-        return Hash.from_xml(xml_response)
+      def soap__request_with_curl(body)
+        stdout, stderr, status = Open3.capture3(
+          'curl',
+          '--silent',
+          '--show-error',
+          '--insecure',
+          '--header', 'Content-Type: text/xml',
+          '--data-binary', '@-',
+          request_url,
+          stdin_data: body
+        )
+
+        raise StandardError, "curl SOAP request failed: #{stderr.strip}" unless status.success?
+
+        return stdout
       end
 
       def soap__envelope(letter)
-        envelope = <<-XML
-          <?xml version="1.0" encoding="utf-8"?>
+        envelope = <<~XML
           <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
             <soap:Body>
               #{letter}
             </soap:Body>
           </soap:Envelope>
-XML
+        XML
         return envelope
       end
 

@@ -70,7 +70,7 @@ Add this line to your application's Gemfile:
 gem 'bcn_ni', git: 'https://github.com/mldoscar/bcn_ni', branch: 'master'
 
 # From ruby gems
-gem 'bcn_ni', '~> 0.1.7'
+gem 'bcn_ni', '~> 0.1.8'
 
 # Using gem install
 gem install bcn_ni
@@ -85,6 +85,7 @@ $ bundle
 ## Changelog
 
 ```
+2026.05.31 - SOAP request fallback for modern OpenSSL, XML parsing fixes, and test updates
 2022.04.06 - Rails 6.x 7.x compatibility
 2021.06.28 - Bugfix: Cambio en el URI para el request de scrapping, el BCN cambió de parámetros y ubicación de URL
 ```
